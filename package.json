@@ -1,0 +1,20 @@
+{
+  "name": "frida-thread-stalker",
+  "version": "1.0.0",
+  "description": "Frida module to detect threads creations while stalking",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "/dist/"
+  ],
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^14.1.0",
+    "@types/node": "^12.7.2",
+    "typescript": "^3.5.3"
+  }
+}
