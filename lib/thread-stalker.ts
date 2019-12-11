@@ -1,67 +1,67 @@
 var ThreadsFollowed : {[id: number] : boolean} = {};
 
 function isThreadFollowed(threadId: ThreadId) {
-    return ThreadsFollowed[threadId];
+  return ThreadsFollowed[threadId];
 }
 
 function FollowThread(threadId:ThreadId, options:StalkerOptions) {
-    if (isThreadFollowed(threadId)) {
-	return;
-    }
+  if (isThreadFollowed(threadId)) {
+    return;
+  }
 
-    ThreadsFollowed[threadId] = true;
-    console.log("[+] Following thread " + threadId);
-    Stalker.follow(threadId, options);
+  ThreadsFollowed[threadId] = true;
+  console.log("[+] Following thread " + threadId);
+  Stalker.follow(threadId, options);
 }
 
 function UnfollowThread(threadId:ThreadId) {
-    if (!isThreadFollowed(threadId)) {
-	return;
-    }
+  if (!isThreadFollowed(threadId)) {
+    return;
+  }
 
-    delete ThreadsFollowed[threadId];
-    console.log("[+] Unfollowing thread " + threadId);
-    Stalker.unfollow(threadId);
-    Stalker.flush();
+  delete ThreadsFollowed[threadId];
+  console.log("[+] Unfollowing thread " + threadId);
+  Stalker.unfollow(threadId);
+  Stalker.flush();
 }
 
 class StalkerThread {
-    constructor(options:StalkerOptions) {
-	this.options = options;
-    }
+  constructor(options:StalkerOptions) {
+    this.options = options;
+  }
 
-    Follow(threadId: ThreadId): void {
-	FollowThread(threadId, this.options);
-    }
-    Unfollow(threadId: ThreadId) : void {
-	UnfollowThread(threadId);
-    }
+  Follow(threadId: ThreadId): void {
+    FollowThread(threadId, this.options);
+  }
+  Unfollow(threadId: ThreadId) : void {
+    UnfollowThread(threadId);
+  }
 
-    options:StalkerOptions;
+  options:StalkerOptions;
 }
 
 
 function PthreadStalker(options:StalkerOptions) : StalkerThread {
-    const stalker = new StalkerThread(options);
-    const pthreadCreate = Module.getExportByName(null, 'pthread_create');
-    Interceptor.attach(pthreadCreate, {
-	onEnter(args) {
-	    //if who calls pthread_create is not being followed skip it
-	    if (!isThreadFollowed(this.threadId)) {
-		return;
-	    }
-	    const functionAddress = args[2] as NativePointer;
-	    Interceptor.attach(functionAddress, {
-		onEnter(args) {
-		    stalker.Follow(this.threadId);
-		},
-		onLeave(retVal) {
-		    stalker.Unfollow(this.threadId);
-		}
-	    });
-	}
-    });
-    return stalker;
+  const stalker = new StalkerThread(options);
+  const pthreadCreate = Module.getExportByName(null, 'pthread_create');
+  Interceptor.attach(pthreadCreate, {
+    onEnter(args) {
+      //if who calls pthread_create is not being followed skip it
+      if (!isThreadFollowed(this.threadId)) {
+        return;
+      }
+      const functionAddress = args[2] as NativePointer;
+      Interceptor.attach(functionAddress, {
+        onEnter(args) {
+          stalker.Follow(this.threadId);
+        },
+        onLeave(retVal) {
+          stalker.Unfollow(this.threadId);
+        }
+      });
+    }
+  });
+  return stalker;
 }
 
 export { PthreadStalker };
