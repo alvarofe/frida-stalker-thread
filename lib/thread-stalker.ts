@@ -22,7 +22,7 @@ function UnfollowThread(threadId:ThreadId) {
   delete ThreadsFollowed[threadId];
   console.log("[+] Unfollowing thread " + threadId);
   Stalker.unfollow(threadId);
-  Stalker.flush();
+  Stalker.garbageCollect();
 }
 
 class StalkerThread {

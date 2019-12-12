@@ -1,7 +1,7 @@
 {
-  "author" : "Alvaro Felipe Melchor",
+  "author": "Alvaro Felipe Melchor",
   "name": "frida-stalker-thread",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Frida module to continue stalking on thread creation",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
